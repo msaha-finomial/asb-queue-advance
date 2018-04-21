@@ -3,6 +3,7 @@ using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,19 +12,25 @@ namespace Consumer
 {
     public class Consumer
     {
-        const string queueName = "ServiceBusQueue";
         public static void Main(string[] args)
         {
+            string queueName = ConfigurationManager.AppSettings["QueueName"];
+            string serviceNamespace = ConfigurationManager.AppSettings["ServiceNamespace"];
+
+            string policyName = ConfigurationManager.AppSettings["SAS_PolicyName"];
+            string key = ConfigurationManager.AppSettings["SAS_Key"];
+
+
             // Continuously process messages sent to the "TestQueue" 
             while (true)
             {
-                Uri uri = ServiceBusEnvironment.CreateServiceUri("sb", "finomial", string.Empty);
+                Uri uri = ServiceBusEnvironment.CreateServiceUri("sb", serviceNamespace, string.Empty);
                 TimeSpan timeSpan = new TimeSpan(480, 30, 30);
                 TokenScope tokenScope = TokenScope.Namespace;
 
                 TokenProvider tokenProvider = TokenProvider.CreateSharedAccessSignatureTokenProvider(
-                    "ListenAccess",
-                    "GC+818pCggb523m3NXUmFybdTxE+1CPAPzuU1YZ4UyY=",
+                    policyName,
+                    key,
                     timeSpan,
                     tokenScope
                 );

@@ -3,6 +3,7 @@ using Microsoft.ServiceBus;
 using Microsoft.ServiceBus.Messaging;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,7 +12,6 @@ namespace Producer
 {
     public class Producer
     {
-        const string queueName = "ServiceBusQueue";
         public static void Main(string[] args)
         {
             try
@@ -28,16 +28,22 @@ namespace Producer
 
         private static void SendMessage()
         {
+            string queueName = ConfigurationManager.AppSettings["QueueName"];
+            string serviceNamespace = ConfigurationManager.AppSettings["ServiceNamespace"];
+
+            string policyName = ConfigurationManager.AppSettings["SAS_PolicyName"];
+            string key = ConfigurationManager.AppSettings["SAS_Key"];
+
             try
             {
-                Uri uri = ServiceBusEnvironment.CreateServiceUri("sb", "finomial", string.Empty);
+                Uri uri = ServiceBusEnvironment.CreateServiceUri("sb", serviceNamespace, string.Empty);
                 TimeSpan timeSpan = new TimeSpan(480, 30, 30);
                 TokenScope tokenScope = TokenScope.Namespace;
 
                 TokenProvider tokenProvider = TokenProvider.CreateSharedAccessSignatureTokenProvider(
-                    "SendAccess",
-                    "bFgONs8CcQcV9kt1EApD5Oc691OHHU/dMGvTKa4CLuI=",
-                    timeSpan, 
+                    policyName, 
+                    key,
+                    timeSpan,
                     tokenScope
                 );
                 //NamespaceManager namespaceManager = new NamespaceManager(uri, tokenProvider);
@@ -56,7 +62,7 @@ namespace Producer
                     System.Threading.Thread.Sleep(2500);
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw e;
             }
@@ -76,6 +82,7 @@ namespace Producer
 
         private static Uri CreateQueue()
         {
+            string queueName = ConfigurationManager.AppSettings["QueueName"];
             try
             {
                 Uri uri = ServiceBusEnvironment.CreateServiceUri("sb", "finomial", string.Empty);
@@ -106,13 +113,13 @@ namespace Producer
 
                 return uri;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 throw e;
             }
-            
+
         }
 
-        
+
     }
 }
